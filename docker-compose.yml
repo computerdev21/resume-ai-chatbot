@@ -19,7 +19,7 @@ services:
       - "5001:5000"
     environment:
       - NODE_ENV=development
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
     volumes:
       - ./backend:/app
       - /app/node_modules
