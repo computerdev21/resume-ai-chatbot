@@ -16,10 +16,11 @@ services:
   backend:
     build: ./backend
     ports:
-      - "5001:5000"
+      - "5001:5001"
     environment:
       - NODE_ENV=development
       - GROQ_API_KEY=${GROQ_API_KEY}
     volumes:
       - ./backend:/app
+      - /app/uploads
       - /app/node_modules
