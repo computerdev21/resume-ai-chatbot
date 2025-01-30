@@ -79,7 +79,12 @@ Respond in JSON format:
         let parsed;
 
         try {
-            parsed = JSON.parse(content);
+            const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+            if (jsonMatch) {
+                parsed = JSON.parse(jsonMatch[1]);
+            } else {
+                parsed = JSON.parse(content); // fallback if it's clean JSON
+            }
         } catch (err) {
             parsed = {
                 raw: content,
