@@ -6,14 +6,17 @@ const pdf = require('pdf-extraction');
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
 
+let storedResume = '';
+
 router.post('/resume', upload.single('resume'), async (req, res) => {
-    const filePath = req.file.path;
-
     try {
+        const filePath = req.file.path;
         const dataBuffer = fs.readFileSync(filePath);
-        const pdfData = await pdf(dataBuffer);
+        const pdfData = await pdf(dataBuffer); // ✅ fixed here
 
-        fs.unlinkSync(filePath); // Cleanup
+        storedResume = pdfData.text;
+        fs.unlinkSync(filePath);
+
         res.json({ text: pdfData.text });
     } catch (err) {
         console.error('[Upload Error]', err);
@@ -22,3 +25,4 @@ router.post('/resume', upload.single('resume'), async (req, res) => {
 });
 
 module.exports = router;
+module.exports.getStoredResume = () => storedResume;
