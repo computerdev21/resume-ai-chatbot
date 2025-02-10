@@ -66,7 +66,7 @@ export default function Home() {
         <main className="flex flex-col items-center min-h-screen p-6 bg-gray-50 text-black">
             <h1 className="text-3xl font-bold text-blue-700 mb-4">🎯 IntraBot Resume Analyzer</h1>
 
-            <UploadForm onFileChange={handleFileChange} onUpload={handleUpload} uploading={loading} />
+            <UploadForm onFileChange={handleFileChange} onUpload={handleUpload} uploading={loading || analyzing} />
 
             {uploadDone && (
                 <AnalyzeForm
@@ -79,7 +79,7 @@ export default function Home() {
 
             {analysis && <FeedbackCard analysis={analysis} />}
 
-            {resumeText && <ResumeChat resumeText={resumeText} />}
+            {resumeText && <ResumeChat resumeText={resumeText} formatMarkdown={true} />}
         </main>
     );
 }
