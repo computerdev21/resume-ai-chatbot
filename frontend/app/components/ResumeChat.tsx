@@ -1,76 +1,91 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 
-interface ResumeChatProps {
+interface Props {
     resumeText: string;
+    formatMarkdown?: boolean;
 }
 
-const ResumeChat: React.FC<ResumeChatProps> = ({ resumeText }) => {
-    const [chatInput, setChatInput] = useState('');
-    const [chatLog, setChatLog] = useState<{ sender: string; message: string }[]>([]);
-    const [chatLoading, setChatLoading] = useState(false);
+export default function ResumeChat({ resumeText, formatMarkdown = false }: Props) {
+    const [prompt, setPrompt] = useState('');
+    const [messages, setMessages] = useState<{ role: 'user' | 'bot'; content: string }[]>([]);
+    const [loading, setLoading] = useState(false);
+    const chatEndRef = useRef<HTMLDivElement | null>(null);
 
-    const handleChat = async () => {
-        if (!chatInput.trim()) return;
-        const message = chatInput.trim();
+    const sendMessage = async () => {
+        if (!prompt.trim()) return;
 
-        setChatLog((prev) => [...prev, { sender: 'user', message }]);
-        setChatInput('');
-        setChatLoading(true);
+        const userMsg = { role: 'user' as const, content: prompt };
+        setMessages((prev) => [...prev, userMsg]);
+        setPrompt('');
+        setLoading(true);
 
         try {
             const res = await fetch('http://localhost:5001/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: `${resumeText}\n\nUser: ${message}` }),
+                body: JSON.stringify({ prompt }),
             });
 
             const data = await res.json();
-            setChatLog((prev) => [...prev, { sender: 'ai', message: data.reply }]);
+            const botMsg = { role: 'bot' as const, content: data.reply || 'No reply received.' };
+            setMessages((prev) => [...prev, botMsg]);
         } catch (err) {
-            setChatLog((prev) => [...prev, { sender: 'ai', message: '⚠️ Failed to get AI response.' }]);
+            console.error('Chat failed', err);
+            setMessages((prev) => [
+                ...prev,
+                { role: 'bot', content: '❌ Failed to get response from IntraBot.' },
+            ]);
         } finally {
-            setChatLoading(false);
+            setLoading(false);
         }
     };
 
-    return (
-        <div className="w-full max-w-2xl bg-white p-6 rounded-lg shadow-md space-y-4">
-            <h2 className="text-lg font-semibold text-indigo-700 mb-2">💬 Chat With IntraBot</h2>
+    useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
 
-            <div className="max-h-60 overflow-y-auto flex flex-col gap-2 text-sm">
-                {chatLog.map((entry, idx) => (
-                    <div
-                        key={idx}
-                        className={`p-2 rounded ${
-                            entry.sender === 'user' ? 'bg-blue-50 self-end' : 'bg-gray-100 self-start'
-                        }`}
-                    >
-                        <strong>{entry.sender === 'user' ? 'You' : 'IntraBot'}:</strong> {entry.message}
+    return (
+        <div className="w-full max-w-3xl mt-8 bg-white rounded-lg shadow-md text-sm flex flex-col h-[500px]">
+            <div className="p-4 border-b text-xl font-semibold text-blue-800">💬 Chat with IntraBot</div>
+
+            {/* Chat messages area */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                {messages.map((msg, idx) => (
+                    <div key={idx} className={`p-3 rounded-md ${msg.role === 'user' ? 'bg-blue-100' : 'bg-gray-200'}`}>
+                        <div className="font-medium mb-1 text-sm text-gray-700">
+                            {msg.role === 'user' ? 'You' : 'IntraBot'}
+                        </div>
+                        <div className="prose prose-sm max-w-none">
+                            {formatMarkdown ? (
+                                <ReactMarkdown>{msg.content}</ReactMarkdown>
+                            ) : (
+                                <p>{msg.content}</p>
+                            )}
+                        </div>
                     </div>
                 ))}
+                <div ref={chatEndRef} />
             </div>
 
-            <div className="flex gap-2 items-center">
-                <input
-                    type="text"
-                    className="flex-1 border px-3 py-2 rounded shadow-sm"
-                    placeholder="Ask about your resume..."
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleChat()}
-                />
+            {/* Input area */}
+            <div className="p-4 border-t bg-white flex gap-2 items-start">
+        <textarea
+            className="flex-1 border rounded p-2 resize-none h-20"
+            placeholder="Ask IntraBot about your resume..."
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+        />
                 <button
-                    onClick={handleChat}
-                    disabled={chatLoading}
-                    className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
+                    onClick={sendMessage}
+                    disabled={loading}
+                    className="bg-purple-600 text-white px-4 py-2 h-fit rounded hover:bg-purple-700 transition"
                 >
-                    {chatLoading ? '...' : 'Send'}
+                    {loading ? '...' : 'Send'}
                 </button>
             </div>
         </div>
     );
-};
-
-export default ResumeChat;
+}
