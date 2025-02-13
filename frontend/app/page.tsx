@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import UploadForm from './components/UploadForm';
 import AnalyzeForm from './components/AnalyzeForm';
 import FeedbackCard from './components/FeedbackCard';
@@ -63,25 +64,58 @@ export default function Home() {
     };
 
     return (
-        <main className="flex flex-col items-center min-h-screen p-6 bg-gray-50 text-black">
-            <h1 className="text-3xl font-bold text-blue-700 mb-4">🎯 IntraBot Resume Analyzer</h1>
-
-            <div className="max-w-2xl text-center mb-6 text-gray-700 space-y-2">
-                <h2 className="text-xl font-semibold text-gray-800">👋 Welcome to IntraBot</h2>
-                <p>
-                    IntraBot is your personal opensource AI-powered resume assistant.
+        <main className="flex flex-col items-center min-h-screen p-6 bg-gradient-to-br from-gray-50 via-blue-50 to-purple-100 text-black font-sans">
+            <motion.section
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+                className="w-full max-w-3xl text-center mb-8 bg-white/60 backdrop-blur-md p-8 rounded-xl shadow-md border border-gray-200"
+            >
+                <motion.div
+                    className="text-6xl mb-4"
+                    animate={{ y: [0, -6, 0] }}
+                    transition={{ repeat: Infinity, duration: 2 }}
+                >
+                    🤖
+                </motion.div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Meet ResuM8 — Your AI Resume Assistant</h2>
+                <p className="text-gray-600 text-base mb-4">
+                    ResuM8 is your personal opensource AI-powered resume assistant.
                     It helps you analyze your resume, gives tailored feedback based on job descriptions,
                     checks ATS compatibility, and suggests improvements.
                 </p>
                 <p>
-                    After uploading your resume, you’ll also be able to chat with IntraBot for real-time,
+                    After uploading your resume, you’ll also be able to chat with ResuM8 for real-time,
                     resume-specific advice and career guidance.
                 </p>
-                <p className="text-blue-600 font-medium">
+                <p className="text-blue-600 font-medium mt-2">
                     🎯 Upload your resume now and level up your job applications!
                 </p>
-            </div>
-            <UploadForm onFileChange={handleFileChange} onUpload={handleUpload} uploading={loading || analyzing}/>
+
+                <div className="mt-6">
+                    <h3 className="text-lg font-semibold text-blue-700 mb-2">How it works</h3>
+                    <div className="grid sm:grid-cols-3 gap-4 text-sm text-left">
+                        <div className="bg-white/70 backdrop-blur rounded-lg p-4 border-l-4 border-blue-500 shadow">
+                            <p className="font-semibold">1️⃣ Upload</p>
+                            <p className="text-gray-600">Choose your resume as a PDF and upload it securely.</p>
+                        </div>
+                        <div className="bg-white/70 backdrop-blur rounded-lg p-4 border-l-4 border-green-500 shadow">
+                            <p className="font-semibold">2️⃣ Analyze</p>
+                            <p className="text-gray-600">
+                                Our AI reviews your resume and gives ATS-friendly suggestions.
+                            </p>
+                        </div>
+                        <div className="bg-white/70 backdrop-blur rounded-lg p-4 border-l-4 border-purple-500 shadow">
+                            <p className="font-semibold">3️⃣ Chat</p>
+                            <p className="text-gray-600">
+                                Ask ResuM8 for personalized tips and guidance based on your resume.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </motion.section>
+
+            <UploadForm onFileChange={handleFileChange} onUpload={handleUpload} uploading={loading || analyzing} />
 
             {uploadDone && (
                 <AnalyzeForm
@@ -92,9 +126,9 @@ export default function Home() {
                 />
             )}
 
-            {analysis && <FeedbackCard analysis={analysis}/>}
+            {analysis && <FeedbackCard analysis={analysis} />}
 
-            {resumeText && <ResumeChat resumeText={resumeText} formatMarkdown={true}/>}
+            {resumeText && <ResumeChat resumeText={resumeText} formatMarkdown={true} />}
         </main>
     );
 }
