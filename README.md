@@ -1,6 +1,6 @@
-# 🤖 IntraBot – AI-Powered Internship Assistant
+# 🤖 ResuM8 – AI-Powered Internship Assistant
 
-IntraBot is a blazing-fast full-stack AI chatbot designed to help students and professionals improve their resumes, prepare for internships, and get personalized job-hunting advice.
+ResuM8 is a blazing-fast full-stack AI chatbot designed to help students and professionals improve their resumes, prepare for internships, and get personalized job-hunting advice.
 
 Powered by **Groq's LLaMA-4**, built with **Next.js**, **Express**, **Docker**, and **Tailwind CSS**.
 
@@ -34,8 +34,8 @@ Powered by **Groq's LLaMA-4**, built with **Next.js**, **Express**, **Docker**, 
 #### 1. Clone the Repo
 
 ```bash
-git clone https://github.com/devchetal/intrabot-ai-chatbot.git
-cd intrabot-ai-chatbot
+git clone https://github.com/devchetal/ResuM8-ai-chatbot.git
+cd ResuM8-ai-chatbot
 ```
 #### 2.Set Environment Variable
 - Create a .env file in the root or backend folder:
