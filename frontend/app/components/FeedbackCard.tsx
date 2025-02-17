@@ -4,13 +4,12 @@ import React from 'react';
 
 interface FeedbackCardProps {
     analysis: any;
+    onFollowUp: (prompt: string) => void;
 }
 
-const FeedbackCard: React.FC<FeedbackCardProps> = ({ analysis }) => {
-    if (!analysis) return null;
-
+export default function FeedbackCard({ analysis, onFollowUp }: FeedbackCardProps) {
     return (
-        <div className="w-full max-w-3xl bg-white p-6 rounded-lg shadow-md space-y-4 text-sm mb-10">
+        <div className="w-full max-w-3xl bg-white p-6 rounded-lg shadow-md space-y-4 text-sm mt-6">
             <h2 className="text-xl font-semibold mb-2 text-blue-800">📊 AI Feedback</h2>
 
             {analysis.suggested_roles && (
@@ -30,12 +29,15 @@ const FeedbackCard: React.FC<FeedbackCardProps> = ({ analysis }) => {
                 <div>
                     <strong className="text-gray-700">Score:</strong>
                     <div className="w-full bg-gray-200 rounded-full h-4 mt-1">
-                        <div
-                            className="bg-green-500 h-4 rounded-full"
-                            style={{ width: `${analysis.score}%` }}
-                        ></div>
+                        <div className="bg-green-500 h-4 rounded-full" style={{ width: `${analysis.score}%` }}></div>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">{analysis.score}/100</p>
+                    <button
+                        onClick={() => onFollowUp('how to improve my resume score')}
+                        className="text-xs text-blue-600 hover:underline mt-1"
+                    >
+                        💬 How can I increase this?
+                    </button>
                 </div>
             )}
 
@@ -52,23 +54,39 @@ const FeedbackCard: React.FC<FeedbackCardProps> = ({ analysis }) => {
                 </p>
             )}
 
-            {analysis.missing_skills && analysis.missing_skills.length > 0 && (
+            {analysis.missing_skills?.length > 0 && (
                 <div>
                     <strong className="text-gray-700">Missing Skills:</strong>
                     <ul className="list-disc ml-6 mt-1">
                         {analysis.missing_skills.map((skill: string, idx: number) => (
-                            <li key={idx}>{skill}</li>
+                            <li key={idx} className="flex justify-between">
+                                {skill}
+                                <button
+                                    onClick={() => onFollowUp(`Why is "${skill}" important for my resume?`)}
+                                    className="text-xs text-blue-600 hover:underline"
+                                >
+                                    Ask why
+                                </button>
+                            </li>
                         ))}
                     </ul>
                 </div>
             )}
 
-            {analysis.suggestions && analysis.suggestions.length > 0 && (
+            {analysis.suggestions?.length > 0 && (
                 <div>
                     <strong className="text-gray-700">Suggestions:</strong>
-                    <ul className="list-disc ml-6 mt-1">
+                    <ul className="list-disc ml-6 mt-1 space-y-1">
                         {analysis.suggestions.map((tip: string, idx: number) => (
-                            <li key={idx}>{tip}</li>
+                            <li key={idx} className="flex justify-between items-center">
+                                <span>{tip}</span>
+                                <button
+                                    onClick={() => onFollowUp(tip)}
+                                    className="text-xs text-blue-600 hover:underline ml-2"
+                                >
+                                    Elaborate 💬
+                                </button>
+                            </li>
                         ))}
                     </ul>
                 </div>
@@ -77,11 +95,11 @@ const FeedbackCard: React.FC<FeedbackCardProps> = ({ analysis }) => {
             {analysis.raw && (
                 <div>
                     <strong className="text-gray-700">⚠️ Raw Output:</strong>
-                    <pre className="bg-gray-100 p-2 rounded mt-2 text-xs whitespace-pre-wrap">{analysis.raw}</pre>
+                    <pre className="bg-gray-100 p-2 rounded mt-2 text-xs whitespace-pre-wrap">
+            {analysis.raw}
+          </pre>
                 </div>
             )}
         </div>
     );
-};
-
-export default FeedbackCard;
+}
