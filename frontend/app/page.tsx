@@ -15,6 +15,7 @@ export default function Home() {
     const [analyzing, setAnalyzing] = useState(false);
     const [analysis, setAnalysis] = useState<any>(null);
     const [uploadDone, setUploadDone] = useState(false);
+    const [followUpPrompt, setFollowUpPrompt] = useState('');
 
     const handleFileChange = (selectedFile: File) => {
         setFile(selectedFile);
@@ -61,6 +62,10 @@ export default function Home() {
         } finally {
             setAnalyzing(false);
         }
+    };
+
+    const handleFollowUp = (prompt: string) => {
+        setFollowUpPrompt(prompt);
     };
 
     return (
@@ -126,9 +131,14 @@ export default function Home() {
                 />
             )}
 
-            {analysis && <FeedbackCard analysis={analysis} />}
+            {analysis && (
+                <FeedbackCard
+                    analysis={analysis}
+                    onFollowUp={(topic: string) => handleFollowUp(`Can you elaborate on: ${topic}`)}
+                />
+            )}
 
-            {resumeText && <ResumeChat resumeText={resumeText} formatMarkdown={true} />}
+            {resumeText && <ResumeChat resumeText={resumeText} followUpPrompt={followUpPrompt} formatMarkdown={true} />}
         </main>
     );
 }
