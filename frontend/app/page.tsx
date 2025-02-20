@@ -15,7 +15,12 @@ export default function Home() {
     const [analyzing, setAnalyzing] = useState(false);
     const [analysis, setAnalysis] = useState<any>(null);
     const [uploadDone, setUploadDone] = useState(false);
-    const [followUpPrompt, setFollowUpPrompt] = useState('');
+    const [followUpPrompt, setFollowUpPrompt] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('followUpPrompt') || '';
+        }
+        return '';
+    });
 
     const handleFileChange = (selectedFile: File) => {
         setFile(selectedFile);
@@ -66,20 +71,22 @@ export default function Home() {
 
     const handleFollowUp = (prompt: string) => {
         setFollowUpPrompt(prompt);
+        localStorage.setItem('followUpPrompt', prompt);
     };
 
     return (
-        <main className="flex flex-col items-center min-h-screen p-6 bg-gradient-to-br from-gray-50 via-blue-50 to-purple-100 text-black font-sans">
+        <main
+            className="flex flex-col items-center min-h-screen p-6 bg-gradient-to-br from-gray-50 via-blue-50 to-purple-100 text-black font-sans">
             <motion.section
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: 'easeOut' }}
+                initial={{opacity: 0, y: 30}}
+                animate={{opacity: 1, y: 0}}
+                transition={{duration: 0.6, ease: 'easeOut'}}
                 className="w-full max-w-3xl text-center mb-8 bg-white/60 backdrop-blur-md p-8 rounded-xl shadow-md border border-gray-200"
             >
                 <motion.div
                     className="text-6xl mb-4"
-                    animate={{ y: [0, -6, 0] }}
-                    transition={{ repeat: Infinity, duration: 2 }}
+                    animate={{y: [0, -6, 0]}}
+                    transition={{repeat: Infinity, duration: 2}}
                 >
                     🤖
                 </motion.div>
@@ -120,25 +127,43 @@ export default function Home() {
                 </div>
             </motion.section>
 
-            <UploadForm onFileChange={handleFileChange} onUpload={handleUpload} uploading={loading || analyzing} />
-
-            {uploadDone && (
-                <AnalyzeForm
-                    jobDesc={jobDesc}
-                    onJobDescChange={setJobDesc}
-                    onAnalyze={handleAnalyze}
-                    analyzing={analyzing}
+            <motion.div
+                initial={{opacity: 0, y: 20}}
+                animate={{opacity: 1, y: 0}}
+                transition={{delay: 0.4, duration: 0.5}}
+                className="w-full flex flex-col items-center gap-6"
+            >
+                <UploadForm
+                    onFileChange={handleFileChange}
+                    onUpload={handleUpload}
+                    uploading={loading || analyzing}
                 />
-            )}
 
-            {analysis && (
-                <FeedbackCard
-                    analysis={analysis}
-                    onFollowUp={(topic: string) => handleFollowUp(`Can you elaborate on: ${topic}`)}
-                />
-            )}
+                {uploadDone && (
+                    <AnalyzeForm
+                        jobDesc={jobDesc}
+                        onJobDescChange={setJobDesc}
+                        onAnalyze={handleAnalyze}
+                        analyzing={analyzing}
+                    />
+                )}
 
-            {resumeText && <ResumeChat resumeText={resumeText} followUpPrompt={followUpPrompt} formatMarkdown={true} />}
+                {analysis && (
+                    <FeedbackCard
+                        analysis={analysis}
+                        onFollowUp={(topic: string) => handleFollowUp(`Can you elaborate on: ${topic}`)}
+                    />
+                )}
+
+                {resumeText && (
+                    <ResumeChat
+                        resumeText={resumeText}
+                        followUpPrompt={followUpPrompt}
+                        formatMarkdown={true}
+                    />
+                )}
+            </motion.div>
+
         </main>
     );
 }
