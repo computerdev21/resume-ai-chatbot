@@ -1,25 +1,26 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { motion } from 'framer-motion';
 import { Bot, User } from 'lucide-react';
 
-interface Props {
+// same interface as before
+interface ChatProps {
     resumeText: string;
     formatMarkdown?: boolean;
-    followUpPrompt?: string;
 }
 
-export default function ResumeChat({ formatMarkdown = false, followUpPrompt }: Props) {
+// No more cover letter logic in chat
+function ResumeChatBase({ resumeText, formatMarkdown = false }: ChatProps, ref: any) {
     const [prompt, setPrompt] = useState('');
     const [messages, setMessages] = useState<{ role: 'user' | 'bot'; content: string }[]>([]);
     const [loading, setLoading] = useState(false);
+
     const chatEndRef = useRef<HTMLDivElement | null>(null);
-    const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
     const sendMessage = async (customPrompt?: string) => {
-        const finalPrompt = customPrompt || prompt.trim();
+        const finalPrompt = customPrompt ?? prompt.trim();
         if (!finalPrompt) return;
 
         const userMsg = { role: 'user' as const, content: finalPrompt };
@@ -48,6 +49,11 @@ export default function ResumeChat({ formatMarkdown = false, followUpPrompt }: P
         }
     };
 
+    // expose the sendMessage method if parent wants to call it
+    useImperativeHandle(ref, () => ({
+        sendMessage,
+    }));
+
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -59,12 +65,6 @@ export default function ResumeChat({ formatMarkdown = false, followUpPrompt }: P
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    useEffect(() => {
-        if (followUpPrompt) {
-            sendMessage(followUpPrompt);
-        }
-    }, [followUpPrompt]);
-
     return (
         <div className="w-full max-w-3xl mt-8 bg-white rounded-lg shadow-md text-sm flex flex-col min-h-[500px]">
             <div className="p-4 border-b text-xl font-semibold text-blue-800">💬 Chat with ResuM8</div>
@@ -75,11 +75,17 @@ export default function ResumeChat({ formatMarkdown = false, followUpPrompt }: P
                     <div
                         key={idx}
                         className={`flex items-start gap-2 p-3 rounded-md ${
-                            msg.role === 'user' ? 'bg-blue-100 self-end text-right flex-row-reverse' : 'bg-purple-100 self-start text-left'
+                            msg.role === 'user'
+                                ? 'bg-blue-100 self-end text-right flex-row-reverse'
+                                : 'bg-purple-100 self-start text-left'
                         }`}
                     >
                         <div className="pt-1">
-                            {msg.role === 'user' ? <User className="w-4 h-4 text-blue-700" /> : <Bot className="w-4 h-4 text-purple-700" />}
+                            {msg.role === 'user' ? (
+                                <User className="w-4 h-4 text-blue-700" />
+                            ) : (
+                                <Bot className="w-4 h-4 text-purple-700" />
+                            )}
                         </div>
                         <div className="text-left">
                             <div className="font-medium mb-1 text-sm text-gray-700">
@@ -113,14 +119,13 @@ export default function ResumeChat({ formatMarkdown = false, followUpPrompt }: P
 
             {/* Input area */}
             <div className="p-4 border-t bg-white flex gap-2 items-start">
-                <textarea
-                    ref={inputRef}
-                    className="flex-1 border rounded p-2 resize-none h-20 focus:outline-blue-300"
-                    placeholder="Ask ResuM8 about your resume..."
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                />
+        <textarea
+            className="flex-1 border rounded p-2 resize-none h-20 focus:outline-blue-300"
+            placeholder="Ask ResuM8 about your resume..."
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={handleKeyDown}
+        />
                 <button
                     onClick={() => sendMessage()}
                     disabled={loading}
@@ -132,3 +137,5 @@ export default function ResumeChat({ formatMarkdown = false, followUpPrompt }: P
         </div>
     );
 }
+
+export const ResumeChat = forwardRef(ResumeChatBase);
