@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import UploadForm from './components/UploadForm';
 import AnalyzeForm from './components/AnalyzeForm';
 import FeedbackCard from './components/FeedbackCard';
-import ResumeChat from './components/ResumeChat';
+import { ResumeChat } from './components/ResumeChat';
+import CoverLetterCard from './components/CoverLetterCard';
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
@@ -15,12 +16,14 @@ export default function Home() {
     const [analyzing, setAnalyzing] = useState(false);
     const [analysis, setAnalysis] = useState<any>(null);
     const [uploadDone, setUploadDone] = useState(false);
-    const [followUpPrompt, setFollowUpPrompt] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return localStorage.getItem('followUpPrompt') || '';
-        }
-        return '';
-    });
+
+    // Chat ref
+    const chatRef = useRef<{ sendMessage: (prompt: string) => void }>(null);
+
+    // cover letter states
+    const [coverLetter, setCoverLetter] = useState('');
+    const [generatingCover, setGeneratingCover] = useState(false);
+    const [scrollToLetter, setScrollToLetter] = useState(false);
 
     const handleFileChange = (selectedFile: File) => {
         setFile(selectedFile);
@@ -70,23 +73,53 @@ export default function Home() {
     };
 
     const handleFollowUp = (prompt: string) => {
-        setFollowUpPrompt(prompt);
-        localStorage.setItem('followUpPrompt', prompt);
+        chatRef.current?.sendMessage(prompt);
+    };
+
+    const handleGenerateCover = async () => {
+        if (!resumeText) return alert('No resume found!');
+        if (!jobDesc.trim()) {
+            alert('Please enter a job description to generate a cover letter.');
+            return;
+        }
+        setGeneratingCover(true);
+        setCoverLetter('');
+        setScrollToLetter(false);
+
+        try {
+            const res = await fetch('http://localhost:5001/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prompt: `Generate a personalized cover letter based on the following resume and job description.\n\nResume:\n${resumeText}\n\nJob Description:\n${jobDesc}`,
+                }),
+            });
+
+            const data = await res.json();
+            setCoverLetter(data.reply || 'No cover letter received.');
+            // after generation, set scrollToLetter => true
+            setScrollToLetter(true);
+        } catch (err) {
+            console.error('Cover letter generation failed', err);
+            setCoverLetter('❌ Failed to generate cover letter.');
+        } finally {
+            setGeneratingCover(false);
+        }
     };
 
     return (
-        <main
-            className="flex flex-col items-center min-h-screen p-6 bg-gradient-to-br from-gray-50 via-blue-50 to-purple-100 text-black font-sans">
+        <main className="flex flex-col items-center min-h-screen p-6 bg-gradient-to-br from-gray-50 via-blue-50 to-purple-100 text-black font-sans">
             <motion.section
-                initial={{opacity: 0, y: 30}}
-                animate={{opacity: 1, y: 0}}
-                transition={{duration: 0.6, ease: 'easeOut'}}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
                 className="w-full max-w-3xl text-center mb-8 bg-white/60 backdrop-blur-md p-8 rounded-xl shadow-md border border-gray-200"
             >
+                {/* hero content */}
                 <motion.div
                     className="text-6xl mb-4"
-                    animate={{y: [0, -6, 0]}}
-                    transition={{repeat: Infinity, duration: 2}}
+                    animate={{ y: [0, -6, 0] }}
+                    transition={{ repeat: Infinity, duration: 2 }}
                 >
                     🤖
                 </motion.div>
@@ -128,9 +161,9 @@ export default function Home() {
             </motion.section>
 
             <motion.div
-                initial={{opacity: 0, y: 20}}
-                animate={{opacity: 1, y: 0}}
-                transition={{delay: 0.4, duration: 0.5}}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
                 className="w-full flex flex-col items-center gap-6"
             >
                 <UploadForm
@@ -145,6 +178,7 @@ export default function Home() {
                         onJobDescChange={setJobDesc}
                         onAnalyze={handleAnalyze}
                         analyzing={analyzing}
+                        onGenerateCover={handleGenerateCover} // pass
                     />
                 )}
 
@@ -156,14 +190,15 @@ export default function Home() {
                 )}
 
                 {resumeText && (
-                    <ResumeChat
-                        resumeText={resumeText}
-                        followUpPrompt={followUpPrompt}
-                        formatMarkdown={true}
-                    />
+                    <ResumeChat ref={chatRef} resumeText={resumeText} formatMarkdown />
                 )}
-            </motion.div>
 
+                {/* Show cover letter card if any */}
+                <CoverLetterCard coverLetter={coverLetter} scrollToLetter={scrollToLetter} />
+
+                {/* Optional spinner or message */}
+                {generatingCover && <p className="text-sm text-gray-600">Cover Letter is generating...</p>}
+            </motion.div>
         </main>
     );
 }
