@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: resum8-backend
+    env: docker
+    # specify the subdirectory for Docker build context:
+    build:
+      context: ./backend
+    # if your Docker listens on port 5000, Render might pass it via $PORT.
+    # Just ensure your server listens on process.env.PORT or 5000
