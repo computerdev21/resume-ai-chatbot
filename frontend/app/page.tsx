@@ -38,7 +38,7 @@ export default function Home() {
         formData.append('resume', file);
 
         try {
-            const res = await fetch('http://localhost:5001/api/upload/resume', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/upload/resume`, {
                 method: 'POST',
                 body: formData,
             });
@@ -58,7 +58,7 @@ export default function Home() {
         setAnalysis(null);
 
         try {
-            const res = await fetch('http://localhost:5001/api/analyze', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/analyze`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ resumeText, jobDescription: jobDesc }),
@@ -87,7 +87,7 @@ export default function Home() {
         setScrollToLetter(false);
 
         try {
-            const res = await fetch('http://localhost:5001/api/chat', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

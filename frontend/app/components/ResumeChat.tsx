@@ -29,7 +29,7 @@ function ResumeChatBase({ resumeText, formatMarkdown = false }: ChatProps, ref: 
         setLoading(true);
 
         try {
-            const res = await fetch('http://localhost:5001/api/chat', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt: finalPrompt }),
