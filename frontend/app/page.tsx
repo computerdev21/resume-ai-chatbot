@@ -66,7 +66,22 @@ export default function Home() {
         <main className="flex flex-col items-center min-h-screen p-6 bg-gray-50 text-black">
             <h1 className="text-3xl font-bold text-blue-700 mb-4">🎯 IntraBot Resume Analyzer</h1>
 
-            <UploadForm onFileChange={handleFileChange} onUpload={handleUpload} uploading={loading || analyzing} />
+            <div className="max-w-2xl text-center mb-6 text-gray-700 space-y-2">
+                <h2 className="text-xl font-semibold text-gray-800">👋 Welcome to IntraBot</h2>
+                <p>
+                    IntraBot is your personal opensource AI-powered resume assistant.
+                    It helps you analyze your resume, gives tailored feedback based on job descriptions,
+                    checks ATS compatibility, and suggests improvements.
+                </p>
+                <p>
+                    After uploading your resume, you’ll also be able to chat with IntraBot for real-time,
+                    resume-specific advice and career guidance.
+                </p>
+                <p className="text-blue-600 font-medium">
+                    🎯 Upload your resume now and level up your job applications!
+                </p>
+            </div>
+            <UploadForm onFileChange={handleFileChange} onUpload={handleUpload} uploading={loading || analyzing}/>
 
             {uploadDone && (
                 <AnalyzeForm
@@ -77,9 +92,9 @@ export default function Home() {
                 />
             )}
 
-            {analysis && <FeedbackCard analysis={analysis} />}
+            {analysis && <FeedbackCard analysis={analysis}/>}
 
-            {resumeText && <ResumeChat resumeText={resumeText} formatMarkdown={true} />}
+            {resumeText && <ResumeChat resumeText={resumeText} formatMarkdown={true}/>}
         </main>
     );
 }
